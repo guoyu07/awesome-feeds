@@ -26,7 +26,8 @@ fs.readdirSync(directory).forEach(fileName => {
     && fileName.indexOf("." + directory) !== -1) {
     var name = fileName.replace("." + directory, "");
     var content = fs.readFileSync(file, "utf8");
-    var jsObject = csvToJS(content);
+    var jsObject = parseCSV(content);
+    console.log(parseCSV(content));
     // Create JSON
     var json = JSON.stringify(jsObject);
     fs.writeFileSync("json/" + name + ".json", json);
@@ -44,35 +45,61 @@ console.log('Finished in ' + (new Date().getTime() - startTime) + ' ms.');
 
 // --- Helper functions ---
 
-// Convert CSV to JS object (https://gist.github.com/jonmaim/7b896cf5c8cfe932a3dd)
-function csvToJS(csv) {
-  var lines = csv.split("\n");
-  var result = [];
-  var headers = lines[0].split(",");
-  for (var i = 1; i < lines.length; i++) {
-    var obj = {};
-    var row = lines[i], queryIdx = 0, startValueIdx = 0, idx = 0;
-    if (row.trim() === '') { continue; }
-    while (idx < row.length) {
-      /* if we meet a double quote we skip until the next one */
-      var c = row[idx];
-      if (c === '"') { do { c = row[++idx]; } while (c !== '"' && idx < row.length - 1); }
-      if (c === ',' || /* handle end of line with no comma */ idx === row.length - 1) {
-        /* we've got a value */
-        var value = row.substr(startValueIdx, idx - startValueIdx).trim();
-        /* skip first double quote */
-        if (value[0] === '"') { value = value.substr(1); }
-        /* skip last comma */
-        if (value[value.length - 1] === ',') { value = value.substr(0, value.length - 1); }
-        /* skip last double quote */
-        if (value[value.length - 1] === '"') { value = value.substr(0, value.length - 1); }
-        var key = headers[queryIdx++];
-        obj[key] = value;
-        startValueIdx = idx + 1;
+// https://gist.github.com/vgrichina/57796fb8d9a8ae41fc0d
+function parseCSV(input) {
+  var separator = ',';
+  var quote = '"';
+  var inQuotes = false;
+  var rows = [];
+  var row = [];
+  var value = "";
+  for (var i = 0; i < input.length; i++) {
+    var c = input[i];
+    if (inQuotes) {
+      if (c == quote) {
+        if (input[i + 1] != quote) {
+          inQuotes = false;
+        } else {
+          value += quote;
+          i++;
+        }
+      } else {
+        value += c;
       }
-      ++idx;
+    } else {
+      if (c == separator) {
+        row.push(value);
+        value = "";
+      } else if (c == "\n") {
+        row.push(value);
+        rows.push(row);
+        value = "";
+        row = [];
+      } else if (c == quote) {
+        inQuotes = true;
+      } else {
+        value += c
+      }
     }
-    result.push(obj);
   }
-  return result;
+  if (value.length > 0) {
+    row.push(value);
+    rows.push(row);
+  }
+  return rowsToObjects(rows);
+}
+
+function rowsToObjects(rows) {
+  var array = [];
+  var headers = rows[0];
+  for (var i = 1; i < rows.length; i++) {
+    var row = rows[i];
+    var object = {};
+    for (var j = 0; j < row.length; j++) {
+      var value = row[j];
+      object[headers[j]] = value;
+    }
+    array.push(object);
+  }
+  return array;
 }
