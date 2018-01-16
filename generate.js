@@ -34,7 +34,7 @@ fs.readdirSync(directory).forEach(fileName => {
     // Create Markdown
     var md = "# " + name.replace("_", " ").toUpperCase() + "\n\nTitle | Description | URL\n--- | --- | ---\n";
     for (var feed of jsObject) {
-      md += (feed.title + " | " + feed.description + " | [URL](" + feed.url + ")\n")
+      md += (feed.title.replace("|", "&#124;") + " | " + feed.description.replace("|", "&#124;") + " | [URL](" + feed.url + ")\n")
     }
     fs.writeFileSync("md/" + name + ".md", md);
   }
