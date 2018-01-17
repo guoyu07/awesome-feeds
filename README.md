@@ -17,6 +17,8 @@ title,description,url
 
 The file name should equal `name.csv` where name equals either the topic ("tech"), the language ("de" - please use language codes like "de" for German or "fr" for French) or the topic and language ("tech_de").
 
+You can also use LibreOffice to edit the CSV file, but choose UTF-8 as character set.
+
 Please only add your feed entries to the according CSV file, because all JSON and Markdown files get deleted when running the generation script.
 
 Please run `node generate.js` before commiting. This requires [Node.js](https://nodejs.org) installed on your machine.
