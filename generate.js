@@ -32,9 +32,9 @@ fs.readdirSync(directory).forEach(fileName => {
     var json = JSON.stringify(jsObject);
     fs.writeFileSync("json/" + name + ".json", json);
     // Create Markdown
-    var md = "# " + name.replace("_", " ").toUpperCase() + "\n\nTitle | Description | URL\n--- | --- | ---\n";
+    var md = "# " + name.replace("_", " ").toUpperCase() + "\n\nTitle | Description | URL\n--- | --- | ---";
     for (var feed of jsObject) {
-      md += (feed.title.replace("|", "&#124;") + " | " + feed.description.replace("|", "&#124;") + " | [URL](" + feed.url + ")\n")
+      md += "\n" + (feed.title.replace("|", "&#124;") + " | " + feed.description.replace("|", "&#124;") + " | [URL](" + feed.url + ")")
     }
     fs.writeFileSync("md/" + name + ".md", md);
   }
@@ -47,6 +47,7 @@ console.log('Finished in ' + (new Date().getTime() - startTime) + ' ms.');
 
 // https://gist.github.com/vgrichina/57796fb8d9a8ae41fc0d
 function parseCSV(input) {
+  input = fixLinebreaks(input);
   var separator = ',';
   var quote = '"';
   var inQuotes = false;
@@ -89,6 +90,13 @@ function parseCSV(input) {
   return rowsToObjects(rows);
 }
 
+// fix linebreaks
+function fixLinebreaks(input) {
+  return input
+  .replace(/\r\n|\r/g, "\n");
+}
+
+// convert row-arrays to JS objects
 function rowsToObjects(rows) {
   var array = [];
   var headers = rows[0];
